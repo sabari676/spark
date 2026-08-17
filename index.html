@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spider-Man's Mission Log (To-Do List)</title>
+    <style>
+        /* RESET & BASE STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #b91c1c 0%, #1e3a8a 100%);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            background-attachment: fixed;
+        }
+
+        /* SPIDER-MAN CONTAINER */
+        .todo-container {
+            background-color: #0f172a;
+            border: 3px solid #ef4444;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.4);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            margin-bottom: 0.5rem;
+            color: #ef4444;
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #93c5fd;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        /* INPUT SECTION */
+        .input-section {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-section input {
+            flex: 1;
+            padding: 0.75rem;
+            background-color: #1e293b;
+            border: 2px solid #3b82f6;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-section input::placeholder {
+            color: #64748b;
+        }
+
+        .input-section input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+        }
+
+        .add-btn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .add-btn:hover {
+            background-color: #dc2626;
+            transform: scale(1.02);
+        }
+
+        /* FILTER BUTTONS */
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            background-color: #1e293b;
+            border: 1px solid #3b82f6;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #93c5fd;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* TASK LIST */
+        .task-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-right: 0.25rem;
+        }
+
+        .task-item {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-left: 5px solid #3b82f6;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .task-item.completed {
+            border-left-color: #10b981;
+            opacity: 0.7;
+        }
+
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .task-content input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: #ef4444;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background-color: transparent;
+            color: #f87171;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* EMPTY STATE */
+        .empty-message {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 1.5rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="todo-container">
+        <h2>🕷️ Spider-Mission Log</h2>
+        <p class="subtitle">"With great power comes great responsibility... and chores."</p>
+        
+        <!-- Input Form Section -->
+        <div class="input-section">
+            <input type="text" id="taskInput" placeholder="e.g., Stop Rhino, fix web-shooters...">
+            <button id="addTaskBtn" class="add-btn">Web-Add</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">All Missions</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <!-- Task Dynamic List -->
+        <ul id="taskList" class="task-list"></ul>
+        <div id="emptyMessage" class="empty-message">No active threats or tasks right now. Time to swing!</div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Application State (Loaded from LocalStorage if available)
+        let tasks = JSON.parse(localStorage.getItem('spidey_tasks')) || [];
+        let currentFilter = 'all';
+
+        // Initialize App Render
+        renderTasks();
+
+        // Add Task Event Listeners
+        addTaskBtn.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Filter Event Listeners
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.getAttribute('data-filter');
+                renderTasks();
+            });
+        });
+
+        // Add Task Function
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (text === '') return;
+
+            const newTask = {
+                id: Date.now(),
+                text: text,
+                completed: false
+            };
+
+            tasks.push(newTask);
+            saveAndRender();
+            taskInput.value = '';
+            taskInput.focus();
+        }
+
+        // Toggle Task Completion State
+        function toggleTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    return { ...task, completed: !task.completed };
+                }
+                return task;
+            });
+            saveAndRender();
+        }
+
+        // Delete Task Function
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveAndRender();
+        }
+
+        // Save to LocalStorage and trigger DOM re-render
+        function saveAndRender() {
+            localStorage.setItem('spidey_tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        // DOM Manipulation / Rendering Engine
+        function renderTasks() {
+            taskList.innerHTML = '';
+
+            // Filter logic
+            const filteredTasks = tasks.filter(task => {
+                if (currentFilter === 'active') return !task.completed;
+                if (currentFilter === 'completed') return task.completed;
+                return true; // 'all'
+            });
+
+            // Handle empty state visualization
+            if (filteredTasks.length === 0) {
+                emptyMessage.style.display = 'block';
+            } else {
+                emptyMessage.style.display = 'none';
+            }
+
+            // Loop and build DOM elements dynamically
+            filteredTasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'task-content';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = task.completed;
+                checkbox.addEventListener('change', () => toggleTask(task.id));
+
+                const span = document.createElement('span');
+                span.textContent = task.text;
+
+                contentDiv.appendChild(checkbox);
+                contentDiv.appendChild(span);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = 'Drop';
+                deleteBtn.addEventListener('click', () => deleteTask(task.id));
+
+                li.appendChild(contentDiv);
+                li.appendChild(deleteBtn);
+                taskList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
